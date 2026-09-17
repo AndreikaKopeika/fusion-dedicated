@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Test
+        run: |
+          dotnet restore
+          dotnet test -c Release --nologo
+
+      - name: Publish (linux-x64)
+        run: >
+          dotnet publish FusionDedicated -c Release -r linux-x64 --self-contained false
+          -o publish --nologo -v quiet
+
+      # libsteam_api.so is Valve's redistributable and is deliberately not shipped;
+      # the README explains where to get it.
+      - name: Package
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          mkdir -p "fusion-dedicated-${VERSION}"
+          cp -r publish/. "fusion-dedicated-${VERSION}/"
+          tar -czf "fusion-dedicated-${VERSION}-linux-x64.tar.gz" "fusion-dedicated-${VERSION}"
+          sha256sum "fusion-dedicated-${VERSION}-linux-x64.tar.gz" > checksums.txt
+
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "Fusion Dedicated $GITHUB_REF_NAME" \
+            --verify-tag \
+            --notes "Built from [$GITHUB_SHA](https://github.com/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}).
+
+          **linux-x64, framework-dependent** — needs the .NET 9 runtime on the target machine.
+
+          \`libsteam_api.so\` is **not included**: it is Valve's redistributable, so download the
+          [Steamworks SDK](https://partner.steamgames.com/downloads/list) and copy
+          \`redistributable_bin/linux64/libsteam_api.so\` next to \`fusiondedicated.dll\`.
+          The [README](https://github.com/${GITHUB_REPOSITORY}#install) covers the rest."
+
+          gh release upload "$GITHUB_REF_NAME" \
+            fusion-dedicated-*-linux-x64.tar.gz checksums.txt

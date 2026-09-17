@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build -c Release --no-restore
+
+      - name: Test
+        run: dotnet test -c Release --no-build --logger "console;verbosity=normal"
+
+      - name: Publish (linux-x64)
+        run: >
+          dotnet publish FusionDedicated -c Release -r linux-x64 --self-contained false
+          --no-restore -o publish --nologo -v quiet
+
+      - name: Smoke-check the published layout
+        run: |
+          test -f publish/fusiondedicated.dll
+          test -f publish/steam_appid.txt
+          test -f publish/Web/index.html
+          test ! -f publish/libsteam_api.so || echo "note: libsteam_api.so found locally, it is not distributed"
