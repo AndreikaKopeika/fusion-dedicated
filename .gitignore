@@ -4,6 +4,7 @@ obj/
 publish/
 publish-*/
 out/
+TestResults/
 *.user
 .vs/
 .idea/

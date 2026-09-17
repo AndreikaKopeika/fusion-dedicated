@@ -14,6 +14,35 @@ INSTALL_DIR="${FUSION_INSTALL_DIR:-$HOME/fusiondedicated}"
 UNIT_DIR="$HOME/.config/systemd/user"
 DISPLAY_NUM="${FUSION_DISPLAY:-:99}"
 
+usage() {
+    cat <<USAGE
+Installs Fusion Dedicated as systemd user services.
+
+Usage: $0 [options]
+
+Options:
+  -h, --help       show this help
+  --uninstall      remove everything (same as uninstall.sh)
+
+Environment:
+  FUSION_INSTALL_DIR   where to install (default: ~/fusiondedicated)
+  FUSION_DISPLAY       the virtual display number (default: :99)
+  STEAMWORKS_SDK       path to the Steamworks SDK, for libsteam_api.so
+
+Re-running the installer is safe: it rebuilds and re-copies everything but
+keeps your existing server.json.
+USAGE
+}
+
+case "${1:-}" in
+    -h|--help) usage; exit 0 ;;
+    --uninstall)
+        exec "${REPO_DIR}/uninstall.sh" "${@:2}"
+        ;;
+    "") ;;
+    *) usage >&2; exit 1 ;;
+esac
+
 say()  { printf '\033[36m==>\033[0m %s\n' "$1"; }
 ok()   { printf '\033[32m  ✓\033[0m %s\n' "$1"; }
 warn() { printf '\033[33m  !\033[0m %s\n' "$1"; }
@@ -220,6 +249,14 @@ x11vnc -display "$DISPLAY_NUM" -localhost -nopw -forever -quiet
 LOGIN
 chmod +x "$INSTALL_DIR/steam-login.sh"
 
+# The day-to-day management command. Copied from the repository rather than
+# embedded, so it stays reviewable and diffable here.
+cp "$REPO_DIR/scripts/fusion-ctl.sh" "$INSTALL_DIR/fusion-ctl.sh"
+chmod +x "$INSTALL_DIR/fusion-ctl.sh"
+cp "$REPO_DIR/uninstall.sh" "$INSTALL_DIR/uninstall.sh"
+chmod +x "$INSTALL_DIR/uninstall.sh"
+ok "fusion-ctl.sh, uninstall.sh"
+
 # ------------------------------------------------------------- units
 
 say "Writing systemd user units"
@@ -315,19 +352,27 @@ cat <<DONE
 
   2. Start everything:
 
+       $INSTALL_DIR/fusion-ctl.sh start
+       # or, equivalently:
        systemctl --user enable --now fusion-xvfb fusion-steam fusion-server
+
+     To also start at boot:      $INSTALL_DIR/fusion-ctl.sh enable
+     To survive logout/reboot:   sudo loginctl enable-linger $USER
 
   3. Watch it come up:
 
-       journalctl --user -u fusion-server -f
+       $INSTALL_DIR/fusion-ctl.sh logs
 
   4. Open the panel. It listens on localhost only by default:
 
-       ssh -L 8778:localhost:8778 $USER@$(hostname -I 2>/dev/null | awk '{print $1}')
-       then browse to http://localhost:8778
+       $INSTALL_DIR/fusion-ctl.sh panel
 
      To expose it on your LAN instead, set "DashboardHost": "+" in
      $INSTALL_DIR/server.json — but read the security note in the README,
      because the panel has no login.
+
+  Tip: put a shortcut on your PATH so "fusion-ctl" works anywhere:
+
+       sudo ln -sf $INSTALL_DIR/fusion-ctl.sh /usr/local/bin/fusion-ctl
 
 DONE
