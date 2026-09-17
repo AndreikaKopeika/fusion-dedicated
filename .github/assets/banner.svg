@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-label="Fusion Dedicated — a headless dedicated server for BONELAB Fusion">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="0.55" stop-color="#0d1b2a"/>
+      <stop offset="1" stop-color="#0a1a16"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#4ae08c"/>
+      <stop offset="1" stop-color="#2bb3d1"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#4ae08c" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#4ae08c" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="300" fill="url(#bg)"/>
+
+  <!-- faint dot grid -->
+  <g fill="#7fd4c1" opacity="0.10">
+    <!-- generated: 10 columns x 3 rows of dots on the right half -->
+    <circle cx="760" cy="60" r="1.6"/><circle cx="820" cy="60" r="1.6"/><circle cx="880" cy="60" r="1.6"/><circle cx="940" cy="60" r="1.6"/><circle cx="1000" cy="60" r="1.6"/><circle cx="1060" cy="60" r="1.6"/><circle cx="1120" cy="60" r="1.6"/>
+    <circle cx="760" cy="150" r="1.6"/><circle cx="820" cy="150" r="1.6"/><circle cx="880" cy="150" r="1.6"/><circle cx="940" cy="150" r="1.6"/><circle cx="1000" cy="150" r="1.6"/><circle cx="1060" cy="150" r="1.6"/><circle cx="1120" cy="150" r="1.6"/>
+    <circle cx="760" cy="240" r="1.6"/><circle cx="820" cy="240" r="1.6"/><circle cx="880" cy="240" r="1.6"/><circle cx="940" cy="240" r="1.6"/><circle cx="1000" cy="240" r="1.6"/><circle cx="1060" cy="240" r="1.6"/><circle cx="1120" cy="240" r="1.6"/>
+  </g>
+
+  <!-- relay topology: server node centre-left, player nodes around it -->
+  <g>
+    <circle cx="985" cy="150" r="150" fill="url(#glow)"/>
+
+    <!-- links -->
+    <g stroke="#4ae08c" stroke-opacity="0.45" stroke-width="1.6">
+      <line x1="985" y1="150" x2="861" y2="80"/>
+      <line x1="985" y1="150" x2="985" y2="44"/>
+      <line x1="985" y1="150" x2="1109" y2="80"/>
+      <line x1="985" y1="150" x2="1140" y2="150"/>
+      <line x1="985" y1="150" x2="1109" y2="220"/>
+      <line x1="985" y1="150" x2="985" y2="256"/>
+      <line x1="985" y1="150" x2="861" y2="220"/>
+      <line x1="985" y1="150" x2="830" y2="150"/>
+    </g>
+
+    <!-- player nodes -->
+    <g fill="#12283c" stroke="#3fb4c9" stroke-width="2">
+      <circle cx="861" cy="80"  r="11"/>
+      <circle cx="985" cy="44"  r="11"/>
+      <circle cx="1109" cy="80" r="11"/>
+      <circle cx="1140" cy="150" r="11"/>
+      <circle cx="1109" cy="220" r="11"/>
+      <circle cx="985" cy="256" r="11"/>
+      <circle cx="861" cy="220" r="11"/>
+      <circle cx="830" cy="150" r="11"/>
+    </g>
+    <g fill="#7fdcee">
+      <circle cx="861" cy="80"  r="3.4"/>
+      <circle cx="985" cy="44"  r="3.4"/>
+      <circle cx="1109" cy="80" r="3.4"/>
+      <circle cx="1140" cy="150" r="3.4"/>
+      <circle cx="1109" cy="220" r="3.4"/>
+      <circle cx="985" cy="256" r="3.4"/>
+      <circle cx="861" cy="220" r="3.4"/>
+      <circle cx="830" cy="150" r="3.4"/>
+    </g>
+
+    <!-- server node -->
+    <g>
+      <rect x="952" y="117" width="66" height="66" rx="14" fill="#0f2d24" stroke="#4ae08c" stroke-width="2.4"/>
+      <g stroke="#4ae08c" stroke-width="3.4" stroke-linecap="round">
+        <line x1="968" y1="136" x2="1002" y2="136"/>
+        <line x1="968" y1="150" x2="1002" y2="150"/>
+        <line x1="968" y1="164" x2="1002" y2="164"/>
+      </g>
+      <circle cx="1002" cy="136" r="2.6" fill="#4ae08c"/>
+      <circle cx="1002" cy="150" r="2.6" fill="#4ae08c"/>
+      <circle cx="1002" cy="164" r="2.6" fill="#4ae08c"/>
+    </g>
+  </g>
+
+  <!-- title block -->
+  <g>
+    <rect x="72" y="86" width="12" height="112" rx="6" fill="url(#accent)"/>
+    <text x="112" y="140" font-family="Segoe UI, Ubuntu, Cantarell, DejaVu Sans, sans-serif" font-size="52" font-weight="700" fill="#f4fbf7" letter-spacing="1">FUSION DEDICATED</text>
+    <text x="114" y="184" font-family="Segoe UI, Ubuntu, Cantarell, DejaVu Sans, sans-serif" font-size="23" fill="#9fb8c8">A headless dedicated server for BONELAB Fusion</text>
+    <g font-family="Segoe UI, Ubuntu, Cantarell, DejaVu Sans, sans-serif" font-size="16" font-weight="600" letter-spacing="0.4">
+      <text x="114" y="222" fill="#4ae08c">no game</text>
+      <text x="216" y="222" fill="#3d5666">·</text>
+      <text x="238" y="222" fill="#4ae08c">no headset</text>
+      <text x="366" y="222" fill="#3d5666">·</text>
+      <text x="388" y="222" fill="#4ae08c">no host player</text>
+      <text x="540" y="222" fill="#3d5666">·</text>
+      <text x="562" y="222" fill="#4ae08c">no port forwarding</text>
+    </g>
+  </g>
+</svg>

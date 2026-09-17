@@ -1,0 +1,7 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question about setup or Steam
+    url: https://github.com/AndreikaKopeika/fusion-dedicated/discussions
+    about: >-
+      Most setup questions are already answered in the README —
+      especially "Why it needs Steam" and Troubleshooting.

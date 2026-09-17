@@ -1,0 +1,25 @@
+name: Feature request
+description: Suggest an idea for the server or the control panel
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: Describe the goal, not just the solution — there is often a simpler path.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: How do you think it should work?
+    validations:
+      required: true
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Is this in scope?
+      description: The server deliberately stays a relay — it does not simulate the world, run gamemodes, or inspect game logic.
+      options:
+        - label: This can be done by relaying metadata, managing lobbies, or changing the panel — not by simulating the game
+          required: true

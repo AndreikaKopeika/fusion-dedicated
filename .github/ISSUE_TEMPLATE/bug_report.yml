@@ -1,0 +1,52 @@
+name: Bug report
+description: Something broke or behaves unexpectedly
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. The server's own log
+        (`~/fusiondedicated/logs/server-YYYY-MM-DD.log`) answers most questions —
+        a relevant excerpt is the single most useful thing you can attach.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you expected, and what actually happened.
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Relevant log excerpt
+      description: A few lines around the problem, not the whole file.
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: fusion-version
+    attributes:
+      label: Fusion version
+      description: The build your players run, and the server's VersionMajor/VersionMinor from server.json.
+      placeholder: e.g. clients on 1.14.2, server.json says 1.14.2
+    validations:
+      required: true
+  - type: dropdown
+    id: disconnect-kind
+    attributes:
+      label: If players dropped — how?
+      description: The distinction matters a great deal when diagnosing.
+      options:
+        - "Closing Connection" (a normal exit)
+        - "Timeout; remote problem" (a client stopped responding)
+        - Not a disconnect issue
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: distro
+    attributes:
+      label: Distribution and setup
+      description: e.g. Arch Linux, headless, installed with install.sh yesterday
+    validations:
+      required: true

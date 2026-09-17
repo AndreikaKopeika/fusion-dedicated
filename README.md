@@ -1,4 +1,14 @@
+<div align="center">
+  <img src=".github/assets/banner.svg" alt="Fusion Dedicated — a headless dedicated server for BONELAB Fusion" width="100%"/>
+</div>
+
 # Fusion Dedicated
+
+[![CI](https://github.com/AndreikaKopeika/fusion-dedicated/actions/workflows/ci.yml/badge.svg)](https://github.com/AndreikaKopeika/fusion-dedicated/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/AndreikaKopeika/fusion-dedicated?include_prereleases)](https://github.com/AndreikaKopeika/fusion-dedicated/releases)
+[![Platform](https://img.shields.io/badge/platform-Linux%20·%20systemd-blue)](#platform)
+[![.NET](https://img.shields.io/badge/.NET-9-512bd4)](https://dotnet.microsoft.com/)
+[![License](https://img.shields.io/github/license/AndreikaKopeika/fusion-dedicated)](LICENSE)
 
 A headless dedicated server for [BONELAB Fusion](https://github.com/Lakatrazz/BONELAB-Fusion).
 
@@ -19,11 +29,13 @@ protection.
 
 ## Contents
 
+- [Quick start](#quick-start)
 - [Why it needs Steam](#why-it-needs-steam)
 - [Requirements](#requirements)
 - [Setting up the Steam account](#setting-up-the-steam-account)
 - [Install](#install)
 - [First run](#first-run)
+- [Everyday management](#everyday-management)
 - [The control panel](#the-control-panel)
 - [Permissions](#permissions)
 - [Spam protection](#spam-protection)
@@ -31,7 +43,27 @@ protection.
 - [Configuration](#configuration)
 - [Troubleshooting](#troubleshooting)
 - [What is tested](#what-is-tested-and-what-is-not)
+- [Development](#development)
+- [Platform](#platform)
 - [Uninstall](#uninstall)
+
+---
+
+## Quick start
+
+The whole thing, for the impatient. Each step is explained in the sections
+below — **read [Setting up the Steam account](#setting-up-the-steam-account)
+first**, it is the one everyone misses:
+
+```bash
+git clone https://github.com/AndreikaKopeika/fusion-dedicated.git
+cd fusion-dedicated
+./install.sh                  # asks before installing anything
+~/fusiondedicated/steam-login.sh          # sign in once (Steam Guard needs a human)
+~/fusiondedicated/fusion-ctl.sh start     # Xvfb, Steam, then the server
+~/fusiondedicated/fusion-ctl.sh logs      # wait for "Lobby published"
+sudo loginctl enable-linger $USER         # survive logout and reboots
+```
 
 ---
 
@@ -153,10 +185,11 @@ cd fusion-dedicated
    later for an unclear reason.
 4. **Creates `server.json`** from `server.example.json`, leaving an existing one
    alone — re-running the installer is safe.
-5. **Writes two helper scripts** into the install directory: `steam-login.sh` for the
-   one-time sign-in, and `steam-supervisor.sh`, which keeps Steam under systemd's
+5. **Writes helper scripts** into the install directory: `steam-login.sh` for the
+   one-time sign-in, `steam-supervisor.sh`, which keeps Steam under systemd's
    control (its launcher forks and exits, which would otherwise make systemd restart
-   it in a loop).
+   it in a loop), and [`fusion-ctl.sh`](#everyday-management), the one command
+   you will actually type day to day.
 6. **Writes three systemd user units** — `fusion-xvfb`, `fusion-steam`,
    `fusion-server` — no root required, then reloads the daemon.
 7. **Checks lingering**, which is what lets user services start at boot without you
@@ -183,6 +216,12 @@ or copy `redistributable_bin/linux64/libsteam_api.so` into `~/fusiondedicated/`.
 After signing in to Steam:
 
 ```bash
+~/fusiondedicated/fusion-ctl.sh start
+```
+
+or, the long way:
+
+```bash
 systemctl --user enable --now fusion-xvfb fusion-steam fusion-server
 ```
 
@@ -195,7 +234,7 @@ sudo loginctl enable-linger $USER
 Watch it start:
 
 ```bash
-journalctl --user -u fusion-server -f
+~/fusiondedicated/fusion-ctl.sh logs
 ```
 
 A healthy start looks like this:
@@ -226,6 +265,30 @@ The split is deliberate:
 - **`fusion-server`** is the relay, tied to Steam with `PartOf` — if Steam goes, both
   are rebuilt. Steam's networking library does occasionally assert and take the
   process down with it; this is what recovers unattended, usually in under a minute.
+
+---
+
+## Everyday management
+
+`fusion-ctl.sh` (in `~/fusiondedicated/`) wraps the three services so you never
+have to remember their names:
+
+```bash
+fusion-ctl start|stop|restart   # the whole stack, in dependency order
+fusion-ctl status               # all three units + the panel address
+fusion-ctl logs                 # follow the server log
+fusion-ctl panel                # how to reach the control panel
+fusion-ctl enable|disable       # start at boot (plus a linger reminder)
+fusion-ctl login                # the one-time Steam sign-in
+fusion-ctl update               # git pull + reinstall from the repo
+fusion-ctl uninstall            # remove everything (asks first)
+```
+
+Put a shortcut on your PATH once:
+
+```bash
+sudo ln -sf ~/fusiondedicated/fusion-ctl.sh /usr/local/bin/fusion-ctl
+```
 
 ---
 
@@ -406,6 +469,45 @@ found a holder, so treat it as untested rather than as a feature.
 
 ---
 
+## Development
+
+The server is a single .NET 9 console app; you can build and test it on any OS,
+Linux is only needed to actually run it:
+
+```bash
+dotnet build FusionDedicated.sln -c Release
+dotnet test  FusionDedicated.sln -c Release
+```
+
+The test suite (63 tests) covers what can be exercised without Steam:
+
+| Area | What is pinned down |
+|---|---|
+| `Protocol/` reader & writer | every primitive round-trips; sbyte bias, string and nullable encoding match Fusion's wire format |
+| `ServerConfig` | save/load round-trip, legacy ban-list migration, permission and mod-catalog semantics |
+| `SpawnGuard` | burst limits, the one-strike-per-window rule, strike decay, exemption, kicks |
+| `PlayerRegistry` | ID allocation from 1 with reuse, lookups, the 255 ceiling |
+
+CI builds, tests and publishes a linux-x64 layout on every push and pull
+request. Tagged releases (`v*`) attach a framework-dependent build as a
+tarball — without `libsteam_api.so`, which is Valve's to distribute, not ours.
+
+The layout is small and hopefully navigable:
+
+```
+FusionDedicated/
+├── Program.cs            startup, main loop, restart handling
+├── ServerConfig.cs       server.json — identity, gameplay, permissions, limits
+├── Protocol/             Fusion's wire format, byte for byte
+├── Server/               relay, registries, spawn guard, metrics, lobby
+└── Web/                  the control panel (Dashboard.cs + one index.html)
+```
+
+Contributing is documented in [CONTRIBUTING.md](CONTRIBUTING.md); the pieces
+that most need outside testing are listed there.
+
+---
+
 ## Platform
 
 Any systemd Linux on x86-64, desktop or headless — the installer adapts to the
@@ -426,6 +528,18 @@ display.
 
 ## Uninstall
 
+The short way:
+
+```bash
+~/fusiondedicated/uninstall.sh        # or: fusion-ctl uninstall
+```
+
+It stops the services, removes the user units and — after asking — deletes the
+install directory, which is where your `server.json` (bans, ranks, the learned
+mod catalogue) lives. Steam itself is left alone.
+
+The long way, by hand:
+
 ```bash
 systemctl --user disable --now fusion-server fusion-steam fusion-xvfb
 rm -f ~/.config/systemd/user/fusion-{server,steam,xvfb}.service
@@ -433,14 +547,16 @@ systemctl --user daemon-reload
 rm -rf ~/fusiondedicated
 ```
 
-The Steam account and its cached credentials are untouched; sign out through Steam
-itself if you want those gone too.
+The Steam account and its cached credentials are untouched either way; sign out
+through Steam itself if you want those gone too.
 
 ---
 
 ## Contributing
 
-Issues and pull requests are welcome. Useful things to include in a bug report:
+Issues and pull requests are welcome — see
+[CONTRIBUTING.md](CONTRIBUTING.md) for build instructions and what the project
+needs most. Useful things to include in a bug report:
 
 - the relevant section of `logs/server-YYYY-MM-DD.log`
 - your Fusion version and the server's `VersionMajor`/`VersionMinor`
