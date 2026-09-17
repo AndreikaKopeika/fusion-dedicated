@@ -27,7 +27,7 @@ jobs:
       - name: Publish (linux-x64)
         run: >
           dotnet publish FusionDedicated -c Release -r linux-x64 --self-contained false
-          --no-restore -o publish --nologo -v quiet
+          -o publish --nologo -v quiet
 
       - name: Smoke-check the published layout
         run: |
